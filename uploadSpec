@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "pattern": "[Mandatory]",
+      "target": "[Mandatory]",
+      "props": "[Optional]",
+      "recursive": "[Optional, Default: 'true']",
+      "flat" : "[Optional, Default: 'true']",
+      "regexp": "[Optional, Default: 'false']"
+    }
+  ]
+}
