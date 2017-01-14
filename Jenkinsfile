@@ -1,10 +1,34 @@
+// As testing will be done between local and work instances, using vars to easily define the artifactory hosts
+
+def apro_host = "1"
+
+
+if (apro_host == "1") {
+	println "this is local instance, assigning folders accordingly"
+	def artefact_dir = "test"
+	
+}
+
+if (apro_host == "2") {
+	println "this is a corporate instance, assign folders accordingly"
+	def artefact_dir = "test"
+	if (artefact_dir == "test") {
+		println "this shouldn't be test - should be platform specific\r\nexiting this now"
+		System.exit(5)
+		
+	}
+
+}
+
+println "This is the directory" + artefact_dir
+
 node {
   step([$class: 'WsCleanup'])
 }
 
 def build_tag_var = "${env.BUILD_TAG}"
 def build_pipeline_name = "${env.JOB_NAME}"
-def server = Artifactory.server '1'
+def server = Artifactory.server apro_host
 
 println build_tag_var
 println build_pipeline_name
@@ -22,7 +46,7 @@ node {
           "files": [
             {
               "pattern": "${build_tag_var}.tar",
-              "target": "gdss-generic/${build_pipeline_name}/${build_tag_var}.tar",
+              "target": "${artefact_dir}/${build_pipeline_name}/${build_tag_var}.tar",
               "props": "build_info=${build_tag_var};test=1"
 
             }
@@ -42,10 +66,11 @@ node {
          isUnix()
          sleep 5
 
+        println "downloading artifact"
         def downloadSpec = """{
           "files": [
             {
-              "pattern": "gdss-generic/${build_pipeline_name}/${build_tag_var}.tar",
+              "pattern": "${artefact_dir}/${build_pipeline_name}/${build_tag_var}.tar",
               "target": "temp/"
 
             }
