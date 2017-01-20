@@ -1,0 +1,64 @@
+// As testing will be done between local and work instances, using vars to easily define the artifactory hosts
+
+apro_host = "1"
+
+
+if (apro_host == "1") {
+	println "this is local instance, assigning folders accordingly"
+	artefact_dir = "test"
+	
+}
+
+if (apro_host == "2") {
+	println "this is a corporate instance, assign folders accordingly"
+	artefact_dir = "test"
+	if (artefact_dir == "test") {
+		println "this shouldn't be test - should be platform specific\r\nexiting this now"
+		System.exit(5)
+		
+	}
+
+}
+
+node {
+  step([$class: 'WsCleanup'])
+}
+
+def build_tag_var = "${env.BUILD_TAG}"
+def build_pipeline_name = "${env.JOB_NAME}"
+def server = Artifactory.server apro_host
+
+println build_tag_var
+println build_pipeline_name
+node {
+    
+
+    stage('Test'){
+         isUnix()
+         sleep 5
+
+        println "downloading artifact"
+        def downloadSpec = """{
+          "files": [
+            {
+              "pattern": "test/pipeline/" + custom_build,
+              "target": "temp/"
+
+            }
+          ]
+        }"""
+        server.download(downloadSpec)   
+        step([$class: 'ArtifactArchiver', artifacts: "temp/pipeline/" + custom_build", fingerprint: true])
+
+
+    	println "running some mock tests in parallel"
+           parallel (
+            phase2: { sh "echo phase2 testing" }
+            )
+                
+        
+        
+    }
+    
+    
+}
